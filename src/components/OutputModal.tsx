@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, FileText, BookOpen, Terminal, Bug, Download, Copy, Check } from "lucide-react";
+import { X, FileText, BookOpen, Terminal, Bug, Download, Copy, Check, Network } from "lucide-react";
+import { DependencyGraph } from "./DependencyGraph"; // Import the graph component
 
 interface Tab {
   id: string;
   label: string;
   content: string;
+  type?: 'text' | 'graph'; // Added type definition
 }
 
 interface OutputModalProps {
@@ -18,6 +20,7 @@ interface OutputModalProps {
 
 const tabIcons: Record<string, React.ElementType> = {
   summarize: FileText,
+  visualize: Network, // Added icon for Code Map
   readme: BookOpen,
   setup: Terminal,
   techdebt: Bug,
@@ -25,6 +28,7 @@ const tabIcons: Record<string, React.ElementType> = {
 
 const tabLabels: Record<string, string> = {
   summarize: "Summary",
+  visualize: "Code Map", // Added label for Code Map
   readme: "README",
   setup: "Setup Guide",
   techdebt: "Tech Debt",
@@ -39,7 +43,7 @@ export const OutputModal = ({
 }: OutputModalProps) => {
   
   const [isCopied, setIsCopied] = useState(false);
-  const ActiveIcon = tabIcons[activeTab];
+  const ActiveIcon = tabIcons[activeTab] || FileText;
 
   // Handle Copy to Clipboard
   const handleCopy = () => {
@@ -91,7 +95,7 @@ export const OutputModal = ({
                    {ActiveIcon && <ActiveIcon size={20} />}
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  {tabLabels[activeTab] || "Output"}
+                  {tabLabels[activeTab] || activeTab}
                 </h2>
               </div>
 
@@ -136,41 +140,53 @@ export const OutputModal = ({
                     tab.id === activeTab && (
                       <motion.div
                         key={tab.id}
-                        className="absolute inset-0 overflow-y-auto p-8"
+                        className="absolute inset-0 overflow-y-auto p-0" // Removed padding from container to let graph fill
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="prose prose-slate prose-sm max-w-none">
-                          <div className="relative text-slate-600 leading-relaxed whitespace-pre-wrap font-mono text-sm bg-white p-6 rounded-2xl border border-slate-200 shadow-sm pt-12">
-                            
-                            {/* Action Buttons Container */}
-                            <div className="absolute top-3 right-3 flex items-center gap-2">
-                              {/* Copy Button (Available for all tabs) */}
-                              <button
-                                onClick={handleCopy}
-                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-100 transition-colors focus:outline-none focus:ring-0"
-                                title="Copy to clipboard"
-                              >
-                                {isCopied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
-                              </button>
-
-                              {/* Download Button (Only for README) */}
-                              {tab.id === "readme" && (
-                                <button
-                                  onClick={handleDownload}
-                                  className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-100 transition-colors focus:outline-none focus:ring-0"
-                                  title="Download README.md"
-                                >
-                                  <Download size={18} />
-                                </button>
-                              )}
-                            </div>
-
-                            {tab.content}
+                        {/* 1. CHECK IF CONTENT IS GRAPH TYPE */}
+                        {tab.type === 'graph' ? (
+                          <div className="w-full h-full bg-slate-900 relative">
+                             {/* Render Graph (Parsing the JSON string content) */}
+                             <DependencyGraph data={JSON.parse(tab.content)} />
                           </div>
-                        </div>
+                        ) : (
+                          
+                          // 2. ELSE RENDER STANDARD TEXT/MARKDOWN (Existing Layout)
+                          <div className="p-8">
+                            <div className="prose prose-slate prose-sm max-w-none">
+                              <div className="relative text-slate-600 leading-relaxed whitespace-pre-wrap font-mono text-sm bg-white p-6 rounded-2xl border border-slate-200 shadow-sm pt-12">
+                                
+                                {/* Action Buttons Container */}
+                                <div className="absolute top-3 right-3 flex items-center gap-2">
+                                  {/* Copy Button (Available for all tabs) */}
+                                  <button
+                                    onClick={handleCopy}
+                                    className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-100 transition-colors focus:outline-none focus:ring-0"
+                                    title="Copy to clipboard"
+                                  >
+                                    {isCopied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+                                  </button>
+
+                                  {/* Download Button (Only for README) */}
+                                  {tab.id === "readme" && (
+                                    <button
+                                      onClick={handleDownload}
+                                      className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-100 transition-colors focus:outline-none focus:ring-0"
+                                      title="Download README.md"
+                                    >
+                                      <Download size={18} />
+                                    </button>
+                                  )}
+                                </div>
+
+                                {tab.content}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     )
                 )}

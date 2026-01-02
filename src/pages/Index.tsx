@@ -13,12 +13,37 @@ import { AboutSection } from "@/components/AboutSection";
 import { ContactSection } from "@/components/ContactSection";
 import { Footer } from "@/components/Footer";
 
-interface Tab {
+// 1. UPDATED: Added 'type' to the interface
+export interface Tab {
   id: string;
   label: string;
   icon: React.ElementType;
   content: string;
+  type?: 'text' | 'graph'; // New property
 }
+
+// 2. ADDED: Mock Graph Data for the Visualization
+const mockGraphData = {
+  nodes: [
+    { id: "src/App.tsx", group: 1, val: 10 },
+    { id: "src/components/Navbar.tsx", group: 2, val: 5 },
+    { id: "src/components/Hero.tsx", group: 2, val: 5 },
+    { id: "src/utils/api.ts", group: 3, val: 3 },
+    { id: "src/hooks/useAuth.ts", group: 3, val: 3 },
+    { id: "package.json", group: 4, val: 8 },
+    { id: "src/components/Footer.tsx", group: 2, val: 5 },
+    { id: "src/pages/Home.tsx", group: 1, val: 7 },
+  ],
+  links: [
+    { source: "src/App.tsx", target: "src/components/Navbar.tsx" },
+    { source: "src/App.tsx", target: "src/components/Hero.tsx" },
+    { source: "src/App.tsx", target: "src/components/Footer.tsx" },
+    { source: "src/App.tsx", target: "src/pages/Home.tsx" },
+    { source: "src/components/Navbar.tsx", target: "src/hooks/useAuth.ts" },
+    { source: "src/utils/api.ts", target: "package.json" },
+    { source: "src/pages/Home.tsx", target: "src/components/Hero.tsx" },
+  ]
+};
 
 const mockOutputs: Record<string, string> = {
   summarize: `# Repository Summary
@@ -145,6 +170,7 @@ const Index = () => {
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTab, setActiveTab] = useState("");
 
+  // 3. UPDATED: Logic to handle 'visualize' (God Mode)
   const handleAnalyze = (feature: string, input: string) => {
     setCurrentFeature(feature);
     setIsLoading(true);
@@ -153,14 +179,28 @@ const Index = () => {
     setTimeout(() => {
       setIsLoading(false);
 
+      // Determine content and type based on feature
+      let content = "";
+      let type: 'text' | 'graph' = 'text';
+
+      if (feature === 'visualize') {
+        // Pass JSON string for the graph
+        content = JSON.stringify(mockGraphData);
+        type = 'graph';
+      } else {
+        content = mockOutputs[feature] || "Analysis complete.";
+        type = 'text';
+      }
+
       // Check if tab already exists
       const existingTabIndex = tabs.findIndex((t) => t.id === feature);
+      
       if (existingTabIndex >= 0) {
         // Update existing tab
         setTabs((prev) =>
           prev.map((t) =>
             t.id === feature
-              ? { ...t, content: mockOutputs[feature] || "Analysis complete." }
+              ? { ...t, content: content, type: type }
               : t
           )
         );
@@ -168,9 +208,10 @@ const Index = () => {
         // Add new tab
         const newTab: Tab = {
           id: feature,
-          label: feature,
+          label: feature === 'visualize' ? 'Code Map' : feature, // Nice label
           icon: () => null,
-          content: mockOutputs[feature] || "Analysis complete.",
+          content: content,
+          type: type, // Store the type
         };
         setTabs((prev) => [...prev, newTab]);
       }
@@ -202,13 +243,8 @@ const Index = () => {
         <FloatingNavbar />
 
         {/* --- SCROLL FADE MASKS --- */}
-        {/* Sits between Navbar and Content to create the smooth fade effect */}
         <div className="pointer-events-none fixed inset-0 z-40">
-          {/* Top Fade (Hides content going under navbar) */}
           <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-50 via-slate-50/80 to-transparent dark:from-slate-950 dark:via-slate-950/80" />
-
-          {/* Bottom Fade (Optional: Fades content in from bottom) */}
-          {/* <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent dark:from-slate-950 dark:via-slate-950/80" /> */}
         </div>
 
         <main className="relative z-0">
