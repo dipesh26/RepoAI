@@ -19,11 +19,11 @@ import {
 import { GlowButton } from "./GlowButton";
 
 const features = [
-  { id: "summarize", label: "Summarize", icon: <FileText size={13} />, tooltip: "Code Summarization" },
-  { id: "visualize", label: "Code Map", icon: <Network size={13} />, tooltip: "Visual Dependency Graph" },
-  { id: "readme", label: "README", icon: <BookOpen size={13} />, tooltip: "Readme File Generation" },
-  { id: "setup", label: "Setup", icon: <Terminal size={13} />, tooltip: "Project Setup Guide" },
-  { id: "techdebt", label: "Tech Debt", icon: <Bug size={13} />, tooltip: "Technical Debt Analysis" },
+  { id: "summarize", label: "Summarize", icon: <FileText size={16} />, tooltip: "Code Summarization" },
+  { id: "visualize", label: "Code Map", icon: <Network size={16} />, tooltip: "Visual Dependency Graph" },
+  { id: "readme", label: "README", icon: <BookOpen size={16} />, tooltip: "Readme File Generation" },
+  { id: "setup", label: "Setup", icon: <Terminal size={16} />, tooltip: "Project Setup Guide" },
+  { id: "techdebt", label: "Tech Debt", icon: <Bug size={16} />, tooltip: "Technical Debt Analysis" },
 ];
 
 interface AIConfigContainerProps {
@@ -114,12 +114,11 @@ export const AIConfigContainer = ({ onAnalyze }: AIConfigContainerProps) => {
         
         <div className="relative z-10">
           {/* Feature Selector */}
-          <div className="mb-8">
+          <div className="mb-4">
             <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-4 ml-1">
               Select AI Mode
             </p>
-            {/* UPDATED: Added md:flex-nowrap to force one line on desktop */}
-            <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-1.7">
+            <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-3">
               {features.map((feature) => {
                 const isActive = selectedFeature === feature.id;
                 return (
@@ -145,8 +144,7 @@ export const AIConfigContainer = ({ onAnalyze }: AIConfigContainerProps) => {
                       onMouseLeave={() => setHoveredFeature(null)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      // UPDATED: Added whitespace-nowrap to prevent text wrapping inside buttons
-                      className={`relative w-full overflow-hidden px-3 md:px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-300 group flex items-center justify-center gap-2 whitespace-nowrap
+                      className={`relative w-full overflow-hidden px-3 py-2 text-xs font-medium rounded-full border transition-all duration-300 group flex items-center justify-center gap-1.5 whitespace-nowrap
                         ${isActive 
                           ? "bg-blue-50/80 dark:bg-blue-50 border-primary dark:border-blue-500 text-primary dark:text-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.15)]" 
                           : "bg-white/50 dark:bg-slate-50 border-slate-200 dark:border-slate-200 text-slate-600 dark:text-slate-600 hover:border-primary/50 hover:text-primary hover:bg-white/80"
@@ -168,58 +166,11 @@ export const AIConfigContainer = ({ onAnalyze }: AIConfigContainerProps) => {
           </div>
 
           {/* Input Area */}
-          <div className="mb-4 relative">
-            
-            {/* Label Row with Upload Icon on the Right */}
-            <div className="flex items-center justify-between mb-4 pl-1 h-10">
-              <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold">
-                Input Source
-              </p>
-
-              {/* Upload Status Icon (Aligned Right) */}
-              <AnimatePresence>
-                {(isUploading || uploadedFiles) && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                  >
-                    <div 
-                      onClick={() => !isUploading && setShowFileModal(true)}
-                      className={`
-                        relative flex items-center justify-center w-10 h-10 rounded-lg border transition-all duration-300 mr-2
-                        ${isUploading 
-                          ? "bg-white/50 border-blue-200" 
-                          : "bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100"
-                        }
-                      `}
-                    >
-                      <Folder 
-                        size={20} 
-                        className={`text-blue-600 transition-opacity ${isUploading ? "opacity-50" : "opacity-100"}`} 
-                      />
-                      {isUploading && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Loader2 size={24} className="text-blue-600 animate-spin" />
-                        </div>
-                      )}
-                      {!isUploading && (
-                        <button
-                          onClick={removeFolder}
-                          className="absolute -top-2 -right-2 bg-white border border-slate-200 rounded-full p-0.5 text-slate-400 hover:text-red-500 hover:border-red-200 shadow-sm transition-colors"
-                        >
-                          <X size={12} strokeWidth={3} />
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <div className="relative">
             
             <div className="relative">
               <div
-                className={`relative flex items-center rounded-2xl border transition-all duration-300 ${
+                className={`relative flex items-center rounded-2xl border transition-all duration-300 pr-1.5 py-1 ${
                   isValid === true
                     ? "border-green-500/50 bg-green-50/30 shadow-[0_0_20px_-5px_rgba(34,197,94,0.2)]"
                     : isValid === false
@@ -231,47 +182,169 @@ export const AIConfigContainer = ({ onAnalyze }: AIConfigContainerProps) => {
                   <Github size={20} />
                 </div>
 
+                {/* Upload Status Icon (Moved Inside Here) */}
+                <AnimatePresence>
+                  {(isUploading || uploadedFiles) && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, width: 0 }}
+                      animate={{ opacity: 1, scale: 1, width: "auto" }}
+                      exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                      className="ml-2 overflow-hidden flex-shrink-0"
+                    >
+                      <div 
+                        onClick={() => !isUploading && setShowFileModal(true)}
+                        className={`
+                          relative flex items-center justify-center w-10 h-10 rounded-lg border transition-all duration-300
+                          ${isUploading 
+                            ? "bg-white/50 border-blue-200" 
+                            : "bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100"
+                          }
+                        `}
+                      >
+                        <Folder 
+                          size={20} 
+                          className={`text-blue-600 transition-opacity ${isUploading ? "opacity-50" : "opacity-100"}`} 
+                        />
+                        {isUploading && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Loader2 size={24} className="text-blue-600 animate-spin" />
+                          </div>
+                        )}
+                        {!isUploading && (
+                          <button
+                            onClick={removeFolder}
+                            className="absolute -top-1.5 -right-1 bg-white border border-slate-200 rounded-full p-0.5 text-slate-400 hover:text-red-500 hover:border-red-200 shadow-sm transition-colors"
+                          >
+                            <X size={12} strokeWidth={3} />
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <input
                   type="text"
                   value={inputValue}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder="https://github.com/user/repository"
                   disabled={isUploading || !!uploadedFiles}
-                  className="flex-1 bg-transparent px-3 py-3 md:px-4 md:py-4 text-sm md:text-base text-slate-700 dark:text-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none font-medium min-w-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-transparent px-3 py-3 md:px-4 md:py-3 text-sm md:text-base text-slate-700 dark:text-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none font-medium min-w-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
 
-                <div className="relative shrink-0">
+                {/* Right Side Actions Group */}
+                <div className="relative shrink-0 flex items-center gap-2">
+                  
+                  {/* Folder Upload Button */}
+                  <div className="relative">
+                    <AnimatePresence>
+                      {isFolderHovered && !uploadedFiles && !isUploading && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5, scale: 0.9 }}
+                          animate={{ opacity: 1, y: -8, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.9 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap z-20 pointer-events-none hidden md:block"
+                        >
+                          Upload folder
+                          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-slate-900 rotate-45" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <motion.button
+                      onClick={handleFolderSelect}
+                      onMouseEnter={() => setIsFolderHovered(true)}
+                      onMouseLeave={() => setIsFolderHovered(false)}
+                      disabled={isUploading || !!uploadedFiles}
+                      className={`p-2 rounded-xl transition-colors ${
+                        isUploading || uploadedFiles 
+                          ? "text-slate-300 cursor-not-allowed hidden" 
+                          : "text-slate-400 hover:text-primary hover:bg-blue-50/50"
+                      }`}
+                      whileHover={!uploadedFiles ? { scale: 1.05 } : {}}
+                      whileTap={!uploadedFiles ? { scale: 0.95 } : {}}
+                      title="Upload local folder"
+                    >
+                      <FolderUp size={20} />
+                    </motion.button>
+                  </div>
+
+                  {/* Validation Icon (Hidden if not interacting) */}
                   <AnimatePresence>
-                    {isFolderHovered && !uploadedFiles && !isUploading && (
+                    {isValid !== null && !isUploading && (
                       <motion.div
-                        initial={{ opacity: 0, y: 5, scale: 0.9 }}
-                        animate={{ opacity: 1, y: -8, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.9 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap z-20 pointer-events-none hidden md:block"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
                       >
-                        Upload folder
-                        <div className="absolute -bottom-1 left-4 w-2 h-2 bg-slate-900 rotate-45" />
+                        {isValid ? (
+                          <div className="bg-green-100 rounded-full">
+                            {/* <Check className="text-green-600" size={14} strokeWidth={3} /> */}
+                          </div>
+                        ) : (
+                          <div className="bg-red-100 rounded-full">
+                            {/* <AlertCircle className="text-red-600" size={14} strokeWidth={3} /> */}
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  <motion.button
-                    onClick={handleFolderSelect}
-                    onMouseEnter={() => setIsFolderHovered(true)}
-                    onMouseLeave={() => setIsFolderHovered(false)}
-                    disabled={isUploading || !!uploadedFiles}
-                    className={`mr-2 md:mr-3 p-2 md:p-2.5 rounded-xl transition-colors ${
-                      isUploading || uploadedFiles 
-                        ? "text-slate-300 cursor-not-allowed" 
-                        : "text-slate-400 hover:text-primary hover:bg-blue-50/50"
-                    }`}
-                    whileHover={!uploadedFiles ? { scale: 1.05 } : {}}
-                    whileTap={!uploadedFiles ? { scale: 0.95 } : {}}
-                    title="Upload local folder"
+                  {/* ANALYZE BUTTON */}
+                  <GlowButton
+                    variant="primary"
+                    size="lg" 
+                    disabled={!canAnalyze && !isUploadSuccess}
+                    onClick={() => canAnalyze && onAnalyze(selectedFeature, inputValue)}
+                    className={`
+                      !py-2 !px-4 h-10 text-sm font-semibold shadow-md transition-all duration-500 rounded-xl whitespace-nowrap min-w-[100px]
+                      ${isUploadSuccess 
+                        ? "bg-green-600 shadow-green-500/20 border-green-500" 
+                        : "shadow-blue-500/20"
+                      }
+                    `}
                   >
-                    <FolderUp size={20} />
-                  </motion.button>
+                    <div className="flex items-center justify-center gap-2 relative overflow-hidden">
+                      <AnimatePresence mode="wait">
+                        {isUploading ? (
+                          <motion.div
+                            key="uploading"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            className="flex items-center gap-2"
+                          >
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>...</span>
+                          </motion.div>
+                        ) : isUploadSuccess ? (
+                          <motion.div
+                            key="success"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            className="flex items-center gap-2 text-white"
+                          >
+                            <Check size={16} strokeWidth={3} />
+                            <span>Done</span>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="analyze"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            className="flex items-center gap-2"
+                          >
+                            <Sparkles size={16} />
+                            <span>Analyze</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </GlowButton>
+
                 </div>
 
                 <input
@@ -285,81 +358,8 @@ export const AIConfigContainer = ({ onAnalyze }: AIConfigContainerProps) => {
                   className="hidden"
                 />
               </div>
-
-              {/* Validation Icons - Commented Out As Requested */}
-              <AnimatePresence>
-                {isValid !== null && !isUploading && (
-                  <motion.div
-                    className="absolute right-12 md:right-[4.5rem] top-1/2 -translate-y-1/2 pointer-events-none"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                  >
-                    {isValid ? (
-                      <div className="bg-green-100 rounded-full">
-                        {/* <Check className="text-green-600" size={14} strokeWidth={3} /> */}
-                      </div>
-                    ) : (
-                      <div className="bg-red-100 rounded-full">
-                        {/* <AlertCircle className="text-red-600" size={14} strokeWidth={3} /> */}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </div>
-
-          {/* Analyze Button */}
-          <GlowButton
-            variant="primary"
-            size="lg"
-            disabled={!canAnalyze && !isUploadSuccess}
-            onClick={() => canAnalyze && onAnalyze(selectedFeature, inputValue)}
-            className={`w-full py-4 text-base font-semibold shadow-lg transition-all duration-500 ${
-              isUploadSuccess ? "bg-green-600 shadow-green-500/20 border-green-500" : "shadow-blue-500/20"
-            }`}
-          >
-            <div className="flex items-center justify-center gap-3 relative h-6 overflow-hidden">
-              <AnimatePresence mode="wait">
-                
-                {isUploading ? (
-                  <motion.div
-                    key="uploading"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 size={20} className="animate-spin" />
-                    <span>Uploading Files...</span>
-                  </motion.div>
-                ) : isUploadSuccess ? (
-                  <motion.div
-                    key="success"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    className="flex items-center gap-2 text-white"
-                  >
-                    <Check size={20} strokeWidth={3} />
-                    <span>Upload Completed</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="analyze"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Sparkles size={20} />
-                    <span>Analyze Repository</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </GlowButton>
         </div>
       </motion.div>
 

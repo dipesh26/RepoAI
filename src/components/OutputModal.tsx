@@ -16,6 +16,7 @@ interface OutputModalProps {
   tabs: Tab[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
+  onNodeAction?: (nodeId: string, action: 'explain' | 'fix' | 'chat') => void;
 }
 
 const tabIcons: Record<string, React.ElementType> = {
@@ -40,6 +41,7 @@ export const OutputModal = ({
   tabs,
   activeTab,
   onTabChange,
+  onNodeAction,
 }: OutputModalProps) => {
   
   const [isCopied, setIsCopied] = useState(false);
@@ -150,7 +152,9 @@ export const OutputModal = ({
                         {tab.type === 'graph' ? (
                           <div className="w-full h-full bg-slate-900 relative">
                              {/* Render Graph (Parsing the JSON string content) */}
-                             <DependencyGraph data={JSON.parse(tab.content)} />
+                             <DependencyGraph data={JSON.parse(tab.content)}
+                             onNodeAction={onNodeAction}
+                             />
                           </div>
                         ) : (
                           

@@ -4,12 +4,12 @@ export const HeroSection = () => {
   return (
     <section
       id="hero"
-      className="relative flex flex-col items-center justify-start pt-32 pb-2 px-6"
+      className="relative flex flex-col items-center justify-start pt-36 pb-2 px-6"
     >
       <div className="relative max-w-5xl mx-auto text-center z-10">
         {/* Main Heading */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+          className="text-3xl md:text-5xl font-bold tracking-tight mb-3"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -40,7 +40,7 @@ export const HeroSection = () => {
 
         {/* Subheading */}
         <motion.p
-          className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10"
+          className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}

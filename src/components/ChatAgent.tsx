@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Code, Search, GitBranch, Layers } from "lucide-react";
+import { Send, Sparkles, Code, Search, GitBranch, Layers, FileCode, X } from "lucide-react";
 
 const quickPrompts = [
   { label: "Find issues", icon: Search },
@@ -13,31 +13,62 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  context?: string; // Added context property
 }
 
-export const ChatAgent = () => {
+// 1. Added Props Interface
+interface ChatAgentProps {
+  externalAction?: { nodeId: string; message: string; autoSend: boolean } | null;
+}
+
+export const ChatAgent = ({ externalAction }: ChatAgentProps) => {
   const [phase, setPhase] = useState<"pre-chat" | "chat">("pre-chat");
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [contextFile, setContextFile] = useState<string | null>(null); // 2. Added Context State
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = (content: string) => {
+  // 3. Logic to handle External Actions from Graph
+  useEffect(() => {
+    if (externalAction) {
+      setPhase("chat"); // Switch to chat view immediately
+
+      if (externalAction.autoSend) {
+        // Direct Action (Explain/Fix): Send immediately
+        sendMessage(externalAction.message, externalAction.nodeId);
+      } else {
+        // Chat Mode: Set context and pre-fill input
+        setContextFile(externalAction.nodeId);
+        setInputValue(externalAction.message);
+      }
+    }
+  }, [externalAction]);
+
+  const sendMessage = (content: string, fileContext?: string) => {
+    const activeContext = fileContext || contextFile;
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: content,
+      context: activeContext || undefined
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setPhase("chat");
     setIsTyping(true);
     
+    // Clear context after sending
+    if (contextFile) setContextFile(null);
+
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `I've analyzed your query about "${content.slice(0, 30)}...". Based on the repository structure, I found several key insights that might help you understand the codebase better. Would you like me to elaborate on any specific aspect?`,
+        content: activeContext 
+            ? `I've analyzed **${activeContext.split('/').pop()}**. Based on the repository structure, I found several key insights regarding this file. Would you like me to elaborate on its dependencies?`
+            : `I've analyzed your query about "${content.slice(0, 30)}...". Based on the repository structure, I found several key insights that might help you understand the codebase better.`,
       };
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
@@ -54,11 +85,11 @@ export const ChatAgent = () => {
     setInputValue(""); // Only clear input when typing manually
   };
 
-    useEffect(() => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-      }, [messages]);
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
 
   return (
     <motion.div
@@ -100,7 +131,7 @@ export const ChatAgent = () => {
                     <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#F1F5F9_0%,#3B82F6_50%,#F1F5F9_100%)]" />
 
                     {/* The Inner Button Content (White Background) */}
-                    <span className="relative flex items-center gap-1.5 h-full w-full rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-500 backdrop-blur-3xl transition-colors group-hover:text-blue-600 group-hover:bg-white/95">
+                    <span className="relative flex items-center gap-1.5 h-full w-full rounded-full bg-white px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-500 backdrop-blur-3xl transition-colors group-hover:text-blue-600 group-hover:bg-white/95">
                       <prompt.icon size={12} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                       {prompt.label}
                     </span>
@@ -129,14 +160,25 @@ export const ChatAgent = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div
-                    className={`max-w-[90%] md:max-w-[85%] px-4 py-3 md:px-5 md:py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed ${
-                      message.role === "user"
-                        ? "bg-blue-600 text-white rounded-br-sm shadow-blue-500/20"
-                        : "bg-white border border-slate-100 dark:border-slate-200 text-slate-700 dark:text-slate-700 rounded-bl-sm"
-                    }`}
-                  >
-                    <p>{message.content}</p>
+                  <div className={`flex flex-col gap-1 max-w-[90%] md:max-w-[85%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                    
+                    {/* Context Chip in History */}
+                    {message.context && (
+                        <span className="text-[10px] bg-white/50 text-slate-500 px-2 py-0.5 rounded-md mb-1 border border-slate-200 inline-flex items-center gap-1 w-fit">
+                            <FileCode size={10} />
+                            {message.context.split('/').pop()}
+                        </span>
+                    )}
+
+                    <div
+                        className={`px-4 py-3 md:px-5 md:py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed ${
+                        message.role === "user"
+                            ? "bg-blue-600 text-white rounded-br-sm shadow-blue-500/20"
+                            : "bg-white border border-slate-100 dark:border-slate-200 text-slate-700 dark:text-slate-700 rounded-bl-sm"
+                        }`}
+                    >
+                        <p>{message.content}</p>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -172,13 +214,37 @@ export const ChatAgent = () => {
 
         {/* Input Area */}
         <div className="p-4 border-t border-white/50 bg-white/30 backdrop-blur-sm">
+          
+          {/* 4. CONTEXT CHIP (Above Input) */}
+          <AnimatePresence>
+            {contextFile && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 10, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: 10, height: 0 }}
+                    className="flex justify-start mb-2"
+                >
+                    <div className="flex items-center gap-2 bg-white/80 border border-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 shadow-sm backdrop-blur-sm">
+                        <FileCode size={14} className="text-blue-500"/>
+                        {contextFile.split('/').pop()}
+                        <button 
+                            onClick={() => setContextFile(null)}
+                            className="ml-1 p-0.5 hover:bg-slate-100 rounded-full transition-colors"
+                        >
+                            <X size={12} />
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="flex items-center gap-3 relative">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask anything about the repository..."
+              placeholder={contextFile ? "Ask about this file..." : "Ask anything about the repository..."}
               className="flex-1 bg-white/50 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 border border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 focus:outline-none transition-all duration-200"
             />
             <motion.button
